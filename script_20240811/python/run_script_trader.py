@@ -29,6 +29,7 @@ def run(engine: ScriptEngine):
         engine.write_log("没有连接到账户")
         return
 
+    # 如果账户未存储就去存储
     for v in all_account:
         if pmodel.Account.select().where(pmodel.Account.account == v.accountid).first() == None:
             pmodel.Account.create(account=v.accountid, balance=v.balance, froze=v.frozen, create_date=tools.get_now_date_format())
@@ -74,40 +75,40 @@ def init_account(engine):
 
 # 循环
 def loop_handle(engine):
+    engine.write_log("\n\n\n")
+    engine.write_log(f"------------------------- 开始运行 -------------------------")
     engine.write_log("loop_handle()")
-
-    print_slice(engine)
 
     # 获取tick数据
     tick = engine.get_tick(engine.open_code)
-
     # 如果tick数据为空
     if tick == None:
         engine.write_log("tick 数据错误")
         return
 
+    # 操作时间点
+    target_time = tools.kv_get("target_time")
+    # 当前时间
+    now_time_form = time.strftime("%H:%M:%S", time.localtime())
+    engine.write_log(f"------------------------- 触发时间 -------------------------")
+    engine.write_log(f"当前时间：{now_time_form} 触发时间：{target_time}")
+
+    # 数据展示
+    print_price(engine, tick)
+    print_slice(engine)
+
     # 更新挂单状态
     update_order(engine)
-
     # 挂单超时后转为市价单
     if tools.kv_get("is_open_re_order") == "1":
         re_order(engine)
-
-    # 操作时间点
-    target_time = tools.kv_get("target_time")
-
-    # 当前时间
-    #now_date_form = time.strftime("%Y-%m-%d", time.localtime())
-    now_time_form = time.strftime("%H:%M:%S", time.localtime())
-    engine.write_log(f"当前时间：{now_time_form} 触发时间：{target_time}")
 
     # 如果不是在目标时间点 直接退出
     if now_time_form != target_time:
         return
 
     
-    # 先平后开 平不成就不开
-    print_price(engine, tick)
+    # 先平后开
     slice_close(engine, tick)
     slice_open(engine, tick)
 
@@ -125,26 +126,33 @@ def before_target(engine):
 def after_target(engine):
     pass
 
-# 输出价格测试使用
+# 输出价格使用
 def print_price(engine, tick):
-    engine.write_log(f"品名 {tick.name}")
-    engine.write_log(f"代码 {tick.symbol}")
-    engine.write_log(f"最新价格 {tick.last_price}")
-    engine.write_log(f"卖出价格 bid_price_1 {tick.bid_price_1}")
-    engine.write_log(f"买入价格 ask_price_1 {tick.ask_price_1}")
+    engine.write_log(f"------------------------- 当前价格 -------------------------")
+    #engine.write_log(f"tick {tick}")
+    engine.write_log(f"品名 {tick.name} 代码 {tick.symbol}")
+    engine.write_log(f"最新价格 {tick.last_price} 总手数 {tick.volume} 总金额 {tick.turnover}")
+    engine.write_log(f"卖出价格 bid_price_2 {tick.bid_price_3} bid_volume_1 {tick.bid_volume_3}")
+    engine.write_log(f"卖出价格 bid_price_2 {tick.bid_price_2} bid_volume_1 {tick.bid_volume_2}")
+    engine.write_log(f"卖出价格 bid_price_1 {tick.bid_price_1} bid_volume_1 {tick.bid_volume_1}")
+    engine.write_log(f"买入价格 ask_price_1 {tick.ask_price_1} ask_volume_1 {tick.ask_volume_1}")
+    engine.write_log(f"买入价格 ask_price_2 {tick.ask_price_2} ask_volume_2 {tick.ask_volume_2}")
+    engine.write_log(f"买入价格 ask_price_3 {tick.ask_price_3} ask_volume_3 {tick.ask_volume_3}")
+    #engine.write_log(f"-------------------------当前价格-------------------------")
 
-# 输出价格测试使用
+# 输出持仓情况
 def print_slice(engine):
-    engine.write_log(f"--------------------------------------------------")
+    engine.write_log(f"------------------------- 持仓情况 -------------------------")
     engine.write_log(f"账户 {engine.account}")
     where = (
         (pmodel.Slice.account == engine.account)
         & (pmodel.Slice.is_close == 0)
     )
     ctp_order_list = pmodel.Slice.select().where(where)
+    engine.write_log(f"持仓数量 {len(ctp_order_list)} 份")
     for v in ctp_order_list:
-        engine.write_log(f"id {v.pk_id} : 名称 {v.name} 代码 {v.code} 多或空 {v.buy_or_sell} volume {v.volume} 开仓价格 {v.open_price} 盈利价格 {v.open_price - 2}")
-    engine.write_log(f"--------------------------------------------------")
+        engine.write_log(f"id {v.pk_id} : 名称 {v.name} 代码 {v.code} 多或空 {v.buy_or_sell} 手数 {v.volume} 开仓价格 {v.open_price} 盈利价格 {v.open_price - 2} 开仓日期 {v.create_date}")
+    #engine.write_log(f"-------------------------持仓情况-------------------------")
 
 # 开仓
 def slice_open(engine, tick):
@@ -166,8 +174,8 @@ def slice_open(engine, tick):
         return
 
     # 如果持仓超过15份了就不开仓了
-    if get_account_slice_num(engine) >= 15:
-        engine.write_log("持仓超过15分, 不开仓")
+    if get_account_slice_num(engine) >= int(tools.kv_get("slice_num")):
+        engine.write_log(f"持仓超过设置份数" + tools.kv_get("slice_num"))
         return
 
     # 开仓
@@ -198,7 +206,7 @@ def slice_open(engine, tick):
         buy_or_sell="sell",
         create_date=tools.get_now_date_format()
     )
-    engine.write_log(create)
+    engine.write_log(f"CTPOrder order_id {create}")
 
 # 平仓
 def slice_close(engine, tick):
@@ -214,15 +222,15 @@ def slice_close(engine, tick):
         & (pmodel.Slice.is_close == 0)
     )
     ctp_order_list = pmodel.Slice.select().where(where)
-    engine.write_log(ctp_order_list)
-    engine.write_log(len(ctp_order_list))
+    #engine.write_log(ctp_order_list)
+    #engine.write_log(len(ctp_order_list))
 
     # 遍历持仓
     for v in ctp_order_list:
-        engine.write_log(f"pk_id {v.pk_id} name {v.name} code {v.code} buy_or_sell {v.buy_or_sell} open_price {v.open_price} volume {v.volume}")
+        #engine.write_log(f"pk_id {v.pk_id} name {v.name} code {v.code} buy_or_sell {v.buy_or_sell} open_price {v.open_price} volume {v.volume}")
 
         slice_tick = engine.get_tick(v.code)
-        engine.write_log(f"slice_tick {slice_tick.name} 价格是 {slice_tick.last_price}")
+        #engine.write_log(f"slice_tick {slice_tick.name} 价格是 {slice_tick.last_price}")
 
         # v.open_price 持仓价格
         # tick.last_price 现在价格
@@ -377,7 +385,7 @@ def update_order(engine):
 # 重新下挂单机制 simnow模拟盘不支持市价单
 def re_order(engine):
 
-    re_order_limit = 60
+    re_order_limit = tools.kv_get("re_order_limit")
 
     # 获取数据库超时挂单
     where = (
