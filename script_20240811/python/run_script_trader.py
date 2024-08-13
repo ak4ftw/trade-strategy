@@ -371,13 +371,14 @@ def update_order(engine):
                     code=v.code,
                     volume=v.volume,
                     open_price=order.price,
+                    open_charge=tools.get_jd_charge(order.price),
                     open_order_id=v.order_id,
                     create_date=tools.get_now_date_format()
                 )
                 engine.write_log(f"开仓 slice.pk_id {create.pk_id}")
             # 如果是平仓
             if v.open_or_close == "close":
-                pmodel.Slice.update(is_close=1, close_order_id=v.order_id, close_price=order.price, close_date=tools.get_now_date_format()).where(pmodel.Slice.pk_id == v.slice_id).execute()
+                pmodel.Slice.update(is_close=1, close_order_id=v.order_id, close_price=order.price, close_charge=tools.get_jd_charge(order.price), close_date=tools.get_now_date_format()).where(pmodel.Slice.pk_id == v.slice_id).execute()
                 engine.write_log(f"平仓 slice.pk_id {v.slice_id}")
             continue
 
