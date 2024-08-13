@@ -24,13 +24,13 @@ a:
     6.收盘后点击停止;
 
 q: 修改触发时间
-a: 修改数据库vnpy中表kv.key= target_time 的value值为 14:55:00
+a: 修改数据库vnpy中表 kv.key= target_time 的value值为 14:55:00
 
 q: 修改每次开仓手数
-a: 修改数据库vnpy中表kv.key= open_code 的value值为 jd2409.DCE (合约代码.交易所缩写)
+a: 修改数据库vnpy中表 kv.key= open_code 的value值为 jd2409.DCE (合约代码.交易所缩写)
 
 q: 修改分仓最大数量
-a: 修改数据库vnpy中表kv.key= slice_num 的value值为 15
+a: 修改数据库vnpy中表 kv.key= slice_num 的value值为 15
 
 q: 修改是否开启市价重挂机制 (simnow模拟盘不支持市价单需要关闭)
 a: 修改数据库vnpy中表kv.key= is_open_re_order 的value值为 1
