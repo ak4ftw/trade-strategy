@@ -32,8 +32,7 @@ def run(engine: ScriptEngine):
     # 如果账户未存储就去存储
     for v in all_account:
         if pmodel.Account.select().where(pmodel.Account.account == v.accountid).first() == None:
-            pmodel.Account.create(account=v.accountid, balance=v.balance, froze=v.frozen, create_date=tools.get_now_date_format())
-
+            pmodel.Account.create(account=v.accountid, slice_num=tools.kv_get("slice_num"), balance=v.balance, froze=v.frozen, create_date=tools.get_now_date_format())
 
     engine.account = tools.get_account()
 
@@ -107,7 +106,7 @@ def loop_handle(engine):
     if now_time_form != target_time:
         return
 
-    
+
     # 先平后开
     slice_close(engine, tick)
     slice_open(engine, tick)
@@ -274,7 +273,7 @@ def slice_close(engine, tick):
                     create_date=tools.get_now_date_format()
                 )
                 engine.write_log(create)
-    
+
 # 获得账户动态权益值
 def get_dynamic_balance(engine, account):
     account_info = engine.get_account(vt_accountid=account, use_df=False)
@@ -378,14 +377,14 @@ def update_order(engine):
                 engine.write_log(f"开仓 slice.pk_id {create.pk_id}")
             # 如果是平仓
             if v.open_or_close == "close":
-                update = pmodel.Slice.update(is_close=1, close_order_id=v.order_id, close_price=order.price, close_date=tools.get_now_date_format()).where(pmodel.Slice.pk_id == v.slice_id).execute()
+                pmodel.Slice.update(is_close=1, close_order_id=v.order_id, close_price=order.price, close_date=tools.get_now_date_format()).where(pmodel.Slice.pk_id == v.slice_id).execute()
                 engine.write_log(f"平仓 slice.pk_id {v.slice_id}")
             continue
 
 # 重新下挂单机制 simnow模拟盘不支持市价单
 def re_order(engine):
 
-    re_order_limit = tools.kv_get("re_order_limit")
+    re_order_limit = int(tools.kv_get("re_order_limit"))
 
     # 获取数据库超时挂单
     where = (
