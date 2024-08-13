@@ -1,5 +1,6 @@
 from peewee import MySQLDatabase, Model
 from peewee import CharField, IntegerField, DecimalField, DateTimeField
+import uuid
 
 db = MySQLDatabase(database='vnpy', user='root', password='root', host='localhost', port=3306)
 
@@ -39,7 +40,7 @@ class CTPOrder(Model):
     open_or_close = CharField()
     buy_or_sell = CharField()
     is_close = IntegerField()
-    slice_id = IntegerField()
+    slice_id = CharField()
     note = CharField()
     create_date = DateTimeField()
 
@@ -49,7 +50,7 @@ class CTPOrder(Model):
 
 
 class Slice(Model):
-    pk_id = IntegerField(primary_key=True)
+    pk_id = CharField(primary_key=True, default=lambda: str(uuid.uuid4()))
     account = CharField()
     buy_or_sell = CharField()
     name = CharField()
