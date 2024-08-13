@@ -1,6 +1,16 @@
 # 交易策略 分仓每日空
-## 
+### python 版本  
+### pip 镜像设置 
+```
+pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+```
+### pip 依赖
+```
+pip install mysql-connector pymysql peewee
+```
 
+
+### q&a
 q:配置文件路径
 a:配置文件路径 C:\Users\49021\.vntrader
 
@@ -26,5 +36,5 @@ q: 修改是否开启市价重挂机制 (simnow模拟盘不支持市价单需要
 a: 修改数据库vnpy中表kv.key= is_open_re_order 的value值为 1
 
 q: 修改是否开启市价重挂机制
-a: 修改数据库vnpy中表kv.key= re_order_limit 的value值为 60 (限价单(a)秒后不成交自动取消该挂单, 重新上架市价单)
+a: 修改数据库vnpy中表kv.key= re_order_limit 的value值为 60 (限价单(a)秒后不成交自动取消该挂单, 上架市价单)
 
