@@ -5,13 +5,13 @@
  Source Server Type    : MySQL
  Source Server Version : 80012
  Source Host           : localhost:3306
- Source Schema         : 
+ Source Schema         : vnpy
 
  Target Server Type    : MySQL
  Target Server Version : 80012
  File Encoding         : 65001
 
- Date: 13/08/2024 14:35:47
+ Date: 14/08/2024 11:38:37
 */
 
 SET NAMES utf8mb4;
@@ -34,7 +34,7 @@ CREATE TABLE `account`  (
   `frozen` decimal(20, 2) NOT NULL DEFAULT 0.00 COMMENT 'ctp冻结金额',
   `create_date` datetime(0) NOT NULL DEFAULT '2000-01-01 00:00:00',
   PRIMARY KEY (`pk_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '账户' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for account_day_client_equity
@@ -48,7 +48,7 @@ CREATE TABLE `account_day_client_equity`  (
   `create_date` datetime(0) NOT NULL DEFAULT '2000-01-01 00:00:00',
   PRIMARY KEY (`pk_id`) USING BTREE,
   INDEX `index_date`(`date`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '账户每日动态权益记录' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '账户每日动态权益记录' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for ctp_order
@@ -72,7 +72,7 @@ CREATE TABLE `ctp_order`  (
   `note` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '备注',
   `create_date` datetime(0) NOT NULL DEFAULT '2000-01-01 00:00:00',
   PRIMARY KEY (`pk_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = 'ctp下单记录' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '挂单记录' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for kv
@@ -102,7 +102,7 @@ INSERT INTO `kv` VALUES (9, '接收操作邮箱', '用于接收操作提醒邮�
 INSERT INTO `kv` VALUES (10, '发送邮件的邮箱账号', '用与发送邮件的邮箱号 需要开启 smtp', 'send_email_username', '490216135@qq.com');
 INSERT INTO `kv` VALUES (11, '发送邮箱密码', '邮箱发送密码', 'send_email_password', 'tvuvdturrbfncaac');
 INSERT INTO `kv` VALUES (12, '是否开启重新市价挂单机制', '是否开启现价挂单失败重新以市价挂单 (simnow模拟盘不支持市价单需要关闭)', 'is_open_re_order', '1');
-INSERT INTO `kv` VALUES (13, '重新市价挂单间隔秒数', '限价单(a)秒后不成交自动取消该挂单, 重新上架市价单', 're_order_limit', '10');
+INSERT INTO `kv` VALUES (13, '重新市价挂单间隔秒数', '限价单(a)秒后不成交自动取消该挂单, 重新上架市价单', 're_order_limit', '30');
 INSERT INTO `kv` VALUES (14, '是否每日开仓', '是否开启每日开仓', 'is_open_slice', '1');
 INSERT INTO `kv` VALUES (15, '是否每日平仓', '是否开启每日平仓', 'is_close_slice', '1');
 INSERT INTO `kv` VALUES (16, '发送邮件smtp服务器地址', '发送邮件smtp服务器地址', 'send_email_smtp_server', 'smtp.qq.com');
@@ -119,7 +119,7 @@ CREATE TABLE `price`  (
   `price` decimal(10, 2) DEFAULT NULL,
   `create_date` datetime(0) DEFAULT NULL,
   PRIMARY KEY (`pk_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '价格保存' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for slice
@@ -134,16 +134,16 @@ CREATE TABLE `slice`  (
   `volume` int(11) NOT NULL DEFAULT 0,
   `open_price` decimal(10, 2) NOT NULL DEFAULT 0.00 COMMENT '开仓价格',
   `open_charge` decimal(10, 2) NOT NULL DEFAULT 0.00 COMMENT '开仓手续费',
-  `close_charge` decimal(10, 2) NOT NULL DEFAULT 0.00 COMMENT '平仓手续费',
   `open_order_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '开仓订单id',
-  `close_order_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '平仓订单id',
   `close_price` decimal(10, 2) NOT NULL DEFAULT 0.00 COMMENT '平仓价格',
+  `close_charge` decimal(10, 2) NOT NULL DEFAULT 0.00 COMMENT '平仓手续费',
+  `close_order_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '平仓订单id',
   `is_close` tinyint(4) NOT NULL DEFAULT 0 COMMENT '是否关闭',
   `note` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '备注',
   `close_date` datetime(0) DEFAULT NULL COMMENT '关闭时间 平仓时间',
   `create_date` datetime(0) DEFAULT NULL COMMENT '创建时间 开仓时间',
   PRIMARY KEY (`pk_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '分仓' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '分仓' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for user
@@ -155,11 +155,24 @@ CREATE TABLE `user`  (
   `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '密码',
   `create_date` datetime(0) NOT NULL DEFAULT '2000-01-01 00:00:00',
   PRIMARY KEY (`pk_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '展示板访问用户' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '展示板用户' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of user
 -- ----------------------------
-INSERT INTO `user` VALUES (1, 'ctp', '$2y$10$eqOYC.4DXcgeh6.qvLi8a.PGYtPLCoQslZ0aMgCM.iNYALlFCIBJ6', '2024-07-23 16:48:02');
+INSERT INTO `user` VALUES (1, 'vnpy', '$2y$10$sBOdJKhVwDkKIih50Wcr2e6z.LNV1PzwRE8h0qs67Zaq6NiEC7TZy', '2024-01-01 00:00:02');
+
+-- ----------------------------
+-- Table structure for user_log
+-- ----------------------------
+DROP TABLE IF EXISTS `user_log`;
+CREATE TABLE `user_log`  (
+  `pk_id` int(11) NOT NULL AUTO_INCREMENT,
+  `username` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `ip` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `msg` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `create_date` datetime(0) DEFAULT NULL,
+  PRIMARY KEY (`pk_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '用户日志' ROW_FORMAT = Dynamic;
 
 SET FOREIGN_KEY_CHECKS = 1;
