@@ -1,5 +1,5 @@
 from peewee import MySQLDatabase, Model
-from peewee import CharField, IntegerField, DecimalField, DateTimeField
+from peewee import CharField, IntegerField, DecimalField, DateTimeField, DateField
 import uuid
 
 db = MySQLDatabase(database='vnpy', user='root', password='root', host='localhost', port=3306)
@@ -8,6 +8,8 @@ db = MySQLDatabase(database='vnpy', user='root', password='root', host='localhos
 class User(Model):
     pk_id = IntegerField(primary_key=True)
     username = CharField()
+    password = CharField()
+    create_date = DateTimeField()
 
     class Meta:
         database = db
@@ -107,38 +109,21 @@ class Price(Model):
     name = CharField()
     code = CharField()
     price = IntegerField()
-    create = DateTimeField()
+    create_date = DateTimeField()
 
     class Meta:
         database = db
         table_name = 'price'
 
 
-class SliceLog(Model):
+class SliceDayLog(Model):
     pk_id = IntegerField(primary_key=True)
     account = CharField()
-    slice_id = IntegerField()
-    open_or_close = CharField()
-    buy_or_sell = CharField()
-    name = CharField()
-    code = CharField()
-    num = IntegerField()
-    price = IntegerField()
-    charge = DecimalField()
-    average_hold_price = DecimalField()
+    date = DateField()
+    slice_num = IntegerField()
+    slice_volume = IntegerField()
     create_date = DateTimeField()
 
     class Meta:
         database = db
-        table_name = 'slice_log'
-
-
-class user(Model):
-    pk_id = IntegerField(primary_key=True)
-    username = CharField()
-    password = CharField()
-    create_date = DateTimeField()
-
-    class Meta:
-        database = db
-        table_name = 'user'
+        table_name = 'slice_day_log'
