@@ -4,6 +4,8 @@ import math
 import vndb
 import pmodel
 import smtplib
+import requests
+import json
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -106,3 +108,33 @@ def send_email_text(toEmail, title, text):
         server.quit()
 
     pass
+
+# 上传数据到主服务器 获取今日产生的数据 上传到主服务器
+def upload_data():
+
+    select_account = pmodel.Account.select().where(pmodel.Account.create_date > get_date_format("%Y-%m-%d 00:00:00", get_now_time()))
+
+    select_account_day_client_equity = pmodel.AccountDayClientEquity.select().where(pmodel.AccountDayClientEquity.create_date > get_date_format("%Y-%m-%d 00:00:00", get_now_time()))
+
+    select_price = pmodel.Price.select().where(pmodel.Price.create_date > get_date_format("%Y-%m-%d 00:00:00", get_now_time()))
+
+    select_slice = pmodel.Slice.select().where(pmodel.Slice.create_date > get_date_format("%Y-%m-%d 00:00:00", get_now_time()))
+    close_select_slice = pmodel.Slice.select().where(pmodel.Slice.close_date > get_date_format("%Y-%m-%d 00:00:00", get_now_time()))
+
+
+    json_obj = {
+        "account": [v.__data__ for v in select_account],
+        "account_day_client_equity": [v.__data__ for v in select_account_day_client_equity],
+        "price": [v.__data__ for v in select_price],
+        "slice": [v.__data__ for v in select_slice],
+        "slice_close": [v.__data__ for v in close_select_slice],
+    }
+    json_data = json.dumps(json_obj, default=str)
+
+    url = kv_get("data_center_url")
+    head = {
+        'Content-Type': 'application/json',
+        'username': pmodel.User.select().first().username,
+        'password': pmodel.User.select().first().password,
+    }
+    response = requests.post(url, headers=head, data=json_data)
