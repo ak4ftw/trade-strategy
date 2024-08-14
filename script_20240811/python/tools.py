@@ -51,7 +51,7 @@ def kv_account_open_code(account):
 
 # 获取账户
 def get_account():
-    get = pmodel.Account.select(pmodel.Account.account).where(pmodel.Account.pk_id == 1).first()
+    get = pmodel.Account.select(pmodel.Account.account).first()
     if get == None:
         return ''
     return get.account
