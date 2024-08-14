@@ -102,20 +102,16 @@ def loop_handle(engine):
     if tools.kv_get("is_open_re_order") == "1":
         re_order(engine)
 
-    # 如果不是在目标时间点 直接退出
-    if now_time_form != target_time:
-        return
+    # 触发开平时间点
+    if now_time_form == target_time:
+        slice_close(engine, tick)
+        slice_open(engine, tick)
 
+    # 收盘后1分钟触发保存数据
+    if now_time_form == "15:01:00":
+        save_contract_price(tick.name, tick.symbol, tick.last_price)
+        save_account_client_equity(engine, engine.account)
 
-    # 先平后开
-    slice_close(engine, tick)
-    slice_open(engine, tick)
-
-    # 记录价格
-    save_contract_price(tick.name, tick.symbol, tick.last_price)
-
-    # 存储账户动态权益
-    save_account_client_equity(engine, engine.account)
 
 # 交易时段运行前运行
 def before_target(engine):
@@ -321,10 +317,6 @@ def save_contract_price(name, code, price):
     insert = price_model.Insert(name=name, code=code, price=price)
     return insert
 
-# 是否在交易时间内
-def is_in_trade_time():
-    return True
-
 # 更新挂单状态
 def update_order(engine):
     now_date_format = tools.get_now_date_format("%Y-%m-%d")
@@ -340,7 +332,8 @@ def update_order(engine):
     # 循环处理未完成订单的状态
     for v in select:
         order = engine.get_order(vt_orderid=v.order_id, use_df=False)
-        #engine.write_log(order)
+        engine.write_log(order)
+        engine.write_log(tools.get_jd_charge(order.price))
 
         # 无返回
         if order == None:
@@ -382,7 +375,7 @@ def update_order(engine):
                 engine.write_log(f"平仓 slice.pk_id {v.slice_id}")
             continue
 
-# 重新下挂单机制 simnow模拟盘不支持市价单
+# 重新下挂单机制 simnow 模拟盘不支持市价单
 def re_order(engine):
 
     re_order_limit = int(tools.kv_get("re_order_limit"))
