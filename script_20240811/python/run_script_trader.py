@@ -8,20 +8,6 @@ import pmodel
 # 入口
 def run(engine: ScriptEngine):
 
-    # todo 后续版本改为代码中读取自动链接 不用ui输入连接
-    # setting = {
-    #     "用户名": "",
-    #     "密码": "",
-    #     "经纪商代码": "9999",
-    #     "交易服务器": "tcp://180.168.146.187:10202",
-    #     "行情服务器": "tcp://180.168.146.187:10212",
-    #     "产品名称": "simnow_client_test",
-    #     "授权编码": "0000000000000000"
-    # }
-    #
-    # engine.connect_gateway(setting, "CTP")
-    # engine.account = setting["用户名"]
-
     all_account = engine.get_all_accounts()
 
     if len(all_account) == 0:
@@ -106,10 +92,11 @@ def loop_handle(engine):
         slice_close(engine, tick)
         slice_open(engine, tick)
 
-    # 收盘后1分钟触发保存数据
-    if now_time_form == "10:08:00":
+    # 收盘后x分钟触发保存数据
+    if now_time_form == tools.kv_get("after_trade_time"):
         save_contract_price(tick.name, tick.symbol, tick.last_price)
         save_account_client_equity(engine, engine.account)
+        engine.strategy_active = False
 
 
 # 交易时段运行前运行
