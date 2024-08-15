@@ -1,7 +1,6 @@
 import time
 import hashlib
 import math
-import vndb
 import pmodel
 import smtplib
 import requests
@@ -61,9 +60,11 @@ def get_account():
 # 获取今日是否下单 True 今日已经下过单; False 今日未下过单;
 def is_today_open():
     now_date_form = time.strftime("%Y-%m-%d", time.localtime())
-    slice_model = vndb.SliceModel()
-    where = f"`create_date` >= '{now_date_form} 00:00:00' AND create_date <= '{now_date_form} 23:59:59'"
-    count = slice_model.Count(where)
+    where = (
+        (pmodel.Slice.create_date >= now_date_form + " 00:00:00")
+        & (pmodel.Slice.create_date <= now_date_form + " 23:59:59")
+    )
+    count = pmodel.Slice.select().where(where).count()
     if count > 0:
         return True
     return False
