@@ -1,6 +1,7 @@
 from peewee import MySQLDatabase, Model
 from peewee import CharField, IntegerField, DecimalField, DateTimeField, DateField
 import uuid
+import time
 
 db = MySQLDatabase(database='vnpy', user='root', password='root', host='localhost', port=3306)
 
@@ -97,7 +98,7 @@ class AccountDayClientEquity(Model):
     account = CharField()
     client_equity = DecimalField()
     date = DateTimeField()
-    create_date = DateTimeField()
+    create_date = DateTimeField(default=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
     class Meta:
         database = db
@@ -109,7 +110,7 @@ class Price(Model):
     name = CharField()
     code = CharField()
     price = IntegerField()
-    create_date = DateTimeField()
+    create_date = DateTimeField(default=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
     class Meta:
         database = db
