@@ -2,7 +2,6 @@ from vnpy_scripttrader import ScriptEngine
 from vnpy.trader.constant import OrderType, Status, Offset, Direction
 
 import time
-import vndb
 import tools
 import pmodel
 
@@ -108,7 +107,7 @@ def loop_handle(engine):
         slice_open(engine, tick)
 
     # 收盘后1分钟触发保存数据
-    if now_time_form == "15:01:00":
+    if now_time_form == "10:08:00":
         save_contract_price(tick.name, tick.symbol, tick.last_price)
         save_account_client_equity(engine, engine.account)
 
@@ -284,8 +283,7 @@ def save_account_client_equity(engine, account):
     if balance == False:
         engine.write_log(f"获取余额失败: {balance}")
         return
-    account_day_client_equity_model = vndb.AccountDayClientEquityModel()
-    account_day_client_equity_model.Insert(account, balance, tools.get_now_date_format("%Y-%m-%d"))
+    pmodel.AccountDayClientEquity.create(account=account, client_equity=balance, date=tools.get_now_date_format("%Y-%m-%d"))
 
 # 获取今日是否还有未成交订单
 def is_today_order_uncomplete(engine):
@@ -313,9 +311,7 @@ def get_account_slice_num(engine):
 
 # 存储当前价格
 def save_contract_price(name, code, price):
-    price_model = vndb.PriceModel()
-    insert = price_model.Insert(name=name, code=code, price=price)
-    return insert
+    pmodel.Price.create(name=name, code=code, price=price)
 
 # 更新挂单状态
 def update_order(engine):
