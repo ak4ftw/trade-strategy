@@ -3,6 +3,7 @@ from vnpy_ctp import CtpGateway
 from vnpy_scripttrader import init_cli_trading
 from run_script_trader import run
 
+# 运行 可通过控制台运行
 def go():
     ctp_setting = {
         "用户名": "226288",
