@@ -85,7 +85,7 @@ CREATE TABLE `kv`  (
   `key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '键',
   `value` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '值',
   PRIMARY KEY (`pk_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 18 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '配置参数' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 20 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '配置参数' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of kv
@@ -94,7 +94,7 @@ INSERT INTO `kv` VALUES (1, '操作时间点', '', 'target_time', '14:55:00');
 INSERT INTO `kv` VALUES (2, '鸡蛋投机手续费', '成交金额的万分之1.5', 'jd_speculation_charge', '0.00015');
 INSERT INTO `kv` VALUES (3, '鸡蛋保值手续费', '成交金额的万分之0.75', 'jd_hedging_charge', '0.000075');
 INSERT INTO `kv` VALUES (4, '鸡蛋交割手续费', '元/吨', 'jd_delivery_charge', '1');
-INSERT INTO `kv` VALUES (5, '分仓最大数量', '总金额被分成多少仓 超出后不会心的开仓', 'slice_num', '15');
+INSERT INTO `kv` VALUES (5, '分仓最大数量', '总金额被分成多少份 达到后不会开新的仓', 'slice_num', '15');
 INSERT INTO `kv` VALUES (6, '分仓每次交易手数', '每天交易开多少手', 'slice_open_num', '1');
 INSERT INTO `kv` VALUES (7, '开仓模式', '1 投机; 2 保值;', 'open_method', '1');
 INSERT INTO `kv` VALUES (8, '开仓代码', '', 'open_code', 'jd2409.DCE');
@@ -102,11 +102,14 @@ INSERT INTO `kv` VALUES (9, '接收操作邮箱', '用于接收操作提醒邮�
 INSERT INTO `kv` VALUES (10, '发送邮件的邮箱账号', '用与发送邮件的邮箱号 需要开启 smtp', 'send_email_username', '490216135@qq.com');
 INSERT INTO `kv` VALUES (11, '发送邮箱密码', '邮箱发送密码', 'send_email_password', 'tvuvdturrbfncaac');
 INSERT INTO `kv` VALUES (12, '是否开启重新市价挂单机制', '是否开启现价挂单失败重新以市价挂单 (simnow模拟盘不支持市价单需要关闭)', 'is_open_re_order', '1');
-INSERT INTO `kv` VALUES (13, '重新市价挂单间隔秒数', '限价单(a)秒后不成交自动取消该挂单, 重新上架市价单', 're_order_limit', '30');
+INSERT INTO `kv` VALUES (13, '重新市价挂单间隔秒数', '限价单(a)秒后不成交自动取消该挂单, 重新上架市价单', 're_order_limit', '60');
 INSERT INTO `kv` VALUES (14, '是否每日开仓', '是否开启每日开仓', 'is_open_slice', '1');
 INSERT INTO `kv` VALUES (15, '是否每日平仓', '是否开启每日平仓', 'is_close_slice', '1');
 INSERT INTO `kv` VALUES (16, '发送邮件smtp服务器地址', '发送邮件smtp服务器地址', 'send_email_smtp_server', 'smtp.qq.com');
 INSERT INTO `kv` VALUES (17, '发送邮件smtp端口', '发送邮件smtp端口', 'send_email_smtp_port', '587');
+INSERT INTO `kv` VALUES (18, '是否收盘后上传记录到数据中心', '', 'is_close_to_upload_data_center', '0');
+INSERT INTO `kv` VALUES (19, '数据中心地址', '', 'data_center_url', 'http://vnpy.local/dataCenter');
+INSERT INTO `kv` VALUES (20, '收盘操作时间点', '到达时间后会停止脚本', 'after_trade_time', '15:01:00');
 
 -- ----------------------------
 -- Table structure for price
@@ -146,6 +149,20 @@ CREATE TABLE `slice`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '分仓' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
+-- Table structure for slice_day_log
+-- ----------------------------
+DROP TABLE IF EXISTS `slice_day_log`;
+CREATE TABLE `slice_day_log`  (
+  `pk_id` int(11) NOT NULL AUTO_INCREMENT,
+  `account` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '账户',
+  `date` date NOT NULL DEFAULT '2000-01-01' COMMENT '日期',
+  `slice_num` int(11) NOT NULL DEFAULT 0 COMMENT '分仓数量',
+  `slice_volume` int(11) NOT NULL DEFAULT 0 COMMENT '总持仓手数',
+  `create_date` datetime(0) NOT NULL COMMENT '创建日期',
+  PRIMARY KEY (`pk_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '持仓信息每日记录' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
 -- Table structure for user
 -- ----------------------------
 DROP TABLE IF EXISTS `user`;
@@ -173,6 +190,6 @@ CREATE TABLE `user_log`  (
   `msg` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `create_date` datetime(0) DEFAULT NULL,
   PRIMARY KEY (`pk_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '用户日志' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '用户日志' ROW_FORMAT = Dynamic;
 
 SET FOREIGN_KEY_CHECKS = 1;
