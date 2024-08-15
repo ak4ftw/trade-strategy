@@ -1,9 +1,9 @@
 from time import sleep
 from vnpy_ctp import CtpGateway
-from vnpy_scripttrader import ScriptEngine, init_cli_trading
+from vnpy_scripttrader import init_cli_trading
+from run_script_trader import run
 
-
-def run():
+def go():
     ctp_setting = {
         "用户名": "226288",
         "密码": "Tw490216135*",
@@ -18,14 +18,15 @@ def run():
     engine.connect_gateway(ctp_setting, "CTP")
 
     sleep(10)
-    vt_symbols = ["jd2409.DCE", "jd2410.DCE"]
-    engine.subscribe(vt_symbols=vt_symbols)
     engine.strategy_active = True
-    while engine.strategy_active == True:
-        tick = engine.get_tick(vt_symbol="jd2409.DCE", use_df=False)
-        print(tick)
-        sleep(5)
-    print("结束运行")
+    run(engine)
+
+
+    engine.write_log("-----------------------------------------------------------")
+    engine.write_log("-----------------------------------------------------------")
+    engine.write_log("------------------------- 结束运行 -------------------------")
+    engine.write_log("-----------------------------------------------------------")
+    engine.write_log("-----------------------------------------------------------")
 
 if __name__ == '__main__':
-    run()
+    go()
