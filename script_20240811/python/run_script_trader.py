@@ -99,7 +99,7 @@ def loop_handle(engine):
     update_order(engine)
     # 挂单超时后转为市价单
     if tools.kv_get("is_open_re_order") == "1":
-        re_order(engine)
+        re_order(engine, tick)
 
     # 触发开平时间点
     if now_time_form == target_time:
@@ -329,7 +329,7 @@ def update_order(engine):
     for v in select:
         order = engine.get_order(vt_orderid=v.order_id, use_df=False)
         engine.write_log(order)
-        engine.write_log(tools.get_jd_charge(order.price))
+        #engine.write_log(tools.get_jd_charge(order.price))
 
         # 无返回
         if order == None:
@@ -372,7 +372,7 @@ def update_order(engine):
             continue
 
 # 重新下挂单机制 simnow 模拟盘不支持市价单
-def re_order(engine):
+def re_order(engine, tick):
 
     re_order_limit = int(tools.kv_get("re_order_limit"))
 
@@ -399,11 +399,13 @@ def re_order(engine):
 
         # 生成新的市价挂单
         vt_symbol = v.code
-        price = 0
+        price = tick.ask_price_1 if v.buy_or_sell == "buy" else tick.bid_price_1
         volume = v.volume - v.complete_volume
         order_type = OrderType.MARKET
         direction = Direction.LONG if v.buy_or_sell == "buy" else Direction.SHORT
         offset = Offset.OPEN if v.open_or_close == "open" else Offset.CLOSE
+
+        engine.write_log(f"re_order market price {price}")
 
         order_id = engine.send_order(vt_symbol=vt_symbol, price=price, volume=volume, order_type=order_type, direction=direction, offset=offset)
         engine.write_log("re_order_id")
