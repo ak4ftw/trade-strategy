@@ -78,8 +78,8 @@ def loop_handle(engine):
     engine.write_log(f"当前时间：{now_time_form} 触发时间：{target_time}")
 
     # 数据展示
-    print_account(engine)
     print_price(engine, tick)
+    print_account(engine)
     print_slice(engine)
 
     # 更新挂单状态
