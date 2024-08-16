@@ -18,7 +18,7 @@ def go():
     engine = init_cli_trading([CtpGateway])
     engine.connect_gateway(ctp_setting, "CTP")
 
-    sleep(10)
+    sleep(30)
     engine.strategy_active = True
     run(engine)
 

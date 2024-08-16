@@ -78,6 +78,7 @@ def loop_handle(engine):
     engine.write_log(f"当前时间：{now_time_form} 触发时间：{target_time}")
 
     # 数据展示
+    print_account(engine)
     print_price(engine, tick)
     print_slice(engine)
 
@@ -106,6 +107,13 @@ def before_target(engine):
 # 交易时段运行后运行
 def after_target(engine):
     pass
+
+# 账户信息
+def print_account(engine):
+    engine.write_log(f"------------------------- 账户信息 -------------------------")
+    all_account = engine.get_all_accounts()
+    for v in all_account:
+        engine.write_log(f"账号 {v.accountid} 网关 {v.gateway_name} 余额 {v.balance} 冻结 {v.frozen}")
 
 # 输出价格使用
 def print_price(engine, tick):
