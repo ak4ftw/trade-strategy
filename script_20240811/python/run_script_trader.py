@@ -113,7 +113,7 @@ def print_account(engine):
     engine.write_log(f"------------------------- 账户信息 -------------------------")
     all_account = engine.get_all_accounts()
     for v in all_account:
-        engine.write_log(f"账号 {v.accountid} 网关 {v.gateway_name} 余额 {v.balance} 冻结 {v.frozen}")
+        engine.write_log(f"账号 {v.accountid} 接口 {v.gateway_name} 余额 {v.balance} 冻结 {v.frozen}")
 
 # 输出价格使用
 def print_price(engine, tick):
