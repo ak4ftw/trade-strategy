@@ -278,7 +278,7 @@ def save_account_client_equity(engine, account):
     if balance == False:
         engine.write_log(f"获取余额失败: {balance}")
         return
-    pmodel.AccountDayClientEquity.create(account=account, client_equity=balance, date=tools.get_now_date_format("%Y-%m-%d"))
+    pmodel.AccountDayClientEquity.create(account=account, client_equity=balance, date=tools.get_now_date_format("%Y-%m-%d"), create_date=tools.get_now_date_format())
 
 # 获取今日是否还有未成交订单
 def is_today_order_uncomplete(engine):
@@ -306,7 +306,7 @@ def get_account_slice_num(engine):
 
 # 存储当前价格
 def save_contract_price(name, code, price):
-    pmodel.Price.create(name=name, code=code, price=price)
+    pmodel.Price.create(name=name, code=code, price=price, create_date=tools.get_now_date_format())
 
 # 更新挂单状态
 def update_order(engine):
@@ -391,6 +391,22 @@ def re_order(engine, tick):
 
         # 关闭数据库限价挂单
         pmodel.CTPOrder.update(is_close=1, note="超时关闭 re_order").where(pmodel.CTPOrder.pk_id == v.pk_id).execute()
+
+        # 是否生成新的市价挂单
+        if v.open_or_close == "open":
+            pass
+        # todo test 新生成的市价平仓 也要检测一下市价是否盈利 不盈利就不开
+        if v.open_or_close == "close":
+            slice = pmodel.Slice.select(pmodel.Slice.open_price).where(pmodel.Slice.pk_id == v.slice_id).first()
+            if v.buy_or_sell == "buy":
+                # 如果是 买平
+                if slice.open_price - 2 > tick.ask_price_1:
+                    return
+            else:
+                # 如果是 卖平
+                if slice.open_price - 2 < tick.bid_price_1:
+                    return
+            pass
 
         # 生成新的市价挂单
         vt_symbol = v.code
