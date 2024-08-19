@@ -121,12 +121,12 @@ def print_price(engine, tick):
     #engine.write_log(f"tick {tick}")
     engine.write_log(f"品名 {tick.name} 代码 {tick.symbol}")
     engine.write_log(f"最新价格 {tick.last_price} 总手数 {tick.volume} 总金额 {tick.turnover}")
-    engine.write_log(f"卖出价格 bid_price_3 {tick.bid_price_3} bid_volume_3 {tick.bid_volume_3}")
-    engine.write_log(f"卖出价格 bid_price_2 {tick.bid_price_2} bid_volume_2 {tick.bid_volume_2}")
-    engine.write_log(f"卖出价格 bid_price_1 {tick.bid_price_1} bid_volume_1 {tick.bid_volume_1}")
-    engine.write_log(f"买入价格 ask_price_1 {tick.ask_price_1} ask_volume_1 {tick.ask_volume_1}")
-    engine.write_log(f"买入价格 ask_price_2 {tick.ask_price_2} ask_volume_2 {tick.ask_volume_2}")
-    engine.write_log(f"买入价格 ask_price_3 {tick.ask_price_3} ask_volume_3 {tick.ask_volume_3}")
+    engine.write_log(f"卖出价格 ask_price_3 {tick.ask_price_3} ask_volume_3 {tick.ask_volume_3}")
+    engine.write_log(f"卖出价格 ask_price_2 {tick.ask_price_2} ask_volume_2 {tick.ask_volume_2}")
+    engine.write_log(f"卖出价格 ask_price_1 {tick.ask_price_1} ask_volume_1 {tick.ask_volume_1}")
+    engine.write_log(f"买入价格 bid_price_1 {tick.bid_price_1} bid_volume_1 {tick.bid_volume_1}")
+    engine.write_log(f"买入价格 bid_price_2 {tick.bid_price_2} bid_volume_2 {tick.bid_volume_2}")
+    engine.write_log(f"买入价格 bid_price_3 {tick.bid_price_3} bid_volume_3 {tick.bid_volume_3}")
     #engine.write_log(f"-------------------------当前价格-------------------------")
 
 # 输出持仓情况
@@ -219,6 +219,7 @@ def slice_close(engine, tick):
         #engine.write_log(f"pk_id {v.pk_id} name {v.name} code {v.code} buy_or_sell {v.buy_or_sell} open_price {v.open_price} volume {v.volume}")
 
         slice_tick = engine.get_tick(v.code)
+        engine.write_log(f"slice_tick {slice_tick.name} 价格是 {slice_tick.last_price}")
         #engine.write_log(f"slice_tick {slice_tick.name} 价格是 {slice_tick.last_price}")
 
         # v.open_price 持仓价格
@@ -229,7 +230,7 @@ def slice_close(engine, tick):
 
         if v.buy_or_sell == "sell":
             # 下跌2个点后判定为盈利 执行平空
-            if v.open_price - 2 > slice_tick.last_price:
+            if v.open_price - 2 >= slice_tick.last_price:
                 engine.write_log("执行平空")
 
                 # 平仓
@@ -362,12 +363,19 @@ def update_order(engine):
                 engine.write_log(f"开仓 slice.pk_id {create.pk_id}")
             # 如果是平仓
             if v.open_or_close == "close":
-                pmodel.Slice.update(is_close=1, close_order_id=v.order_id, close_price=order.price, close_charge=tools.get_jd_charge(order.price), close_date=tools.get_now_date_format()).where(pmodel.Slice.pk_id == v.slice_id).execute()
+                pmodel.Slice.update(
+                    is_close=1,
+                    close_order_id=v.order_id,
+                    close_price=order.price,
+                    close_charge=tools.get_jd_charge(order.price),
+                    close_date=tools.get_now_date_format()
+                ).where(pmodel.Slice.pk_id == v.slice_id).execute()
                 engine.write_log(f"平仓 slice.pk_id {v.slice_id}")
             continue
 
-# 重新下挂单机制 simnow 模拟盘不支持市价单
+# 重新挂单机制 simnow 模拟盘不支持市价单 穿透测试服务器可以
 def re_order(engine, tick):
+    #engine.write_log('re_order()')
 
     re_order_limit = int(tools.kv_get("re_order_limit"))
 
@@ -379,20 +387,19 @@ def re_order(engine, tick):
     )
     select = pmodel.CTPOrder.select().where(where)
     #engine.write_log(select)
-    #engine.write_log(f"超时挂单数量 {len(select)}")
+    engine.write_log(f"超时挂单数量 {len(select)}")
 
     for v in select:
-        engine.write_log(v.pk_id)
+        #engine.write_log(v.pk_id)
 
         # 取消这个限价挂单
         cancel = engine.cancel_order(vt_orderid=v.order_id)
-        engine.write_log("取消挂单返回:")
-        engine.write_log(cancel)
+        engine.write_log(f"取消挂单:{v.order_id}")
 
         # 关闭数据库限价挂单
         pmodel.CTPOrder.update(is_close=1, note="超时关闭 re_order").where(pmodel.CTPOrder.pk_id == v.pk_id).execute()
 
-        # todo test 新生成的市价平仓 也要检测一下市价是否盈利 不盈利就不开
+        # 新生成的市价平仓 也要检测一下市价是否盈利 不盈利就不开
         # 是否生成新的市价挂单
         if v.open_or_close == "open":
             pass
@@ -400,13 +407,13 @@ def re_order(engine, tick):
             slice = pmodel.Slice.select(pmodel.Slice.open_price).where(pmodel.Slice.pk_id == v.slice_id).first()
             if v.buy_or_sell == "buy":
                 # 如果是 买平
-                if slice.open_price - 2 > tick.ask_price_1:
-                    engine.write_log(f"市价买平 无法盈利 退出")
+                if slice.open_price - 2 < tick.ask_price_1:
+                    engine.write_log(f"市价买平 无法盈利 不执行重挂 open_price:{slice.open_price} ask_price_1:{tick.ask_price_1}")
                     return
             else:
                 # 如果是 卖平
-                if slice.open_price - 2 < tick.bid_price_1:
-                    engine.write_log(f"市价买平 无法盈利 退出")
+                if slice.open_price + 2 > tick.bid_price_1:
+                    engine.write_log(f"市价买平 无法盈利 不执行重挂 open_price:{slice.open_price} bid_price_1:{tick.bid_price_1}")
                     return
             pass
 
@@ -442,6 +449,7 @@ def re_order(engine, tick):
             complete_volume=0,
             open_or_close=v.open_or_close,
             buy_or_sell=v.buy_or_sell,
+            slice_id=v.slice_id,
             create_date=tools.get_now_date_format()
         )
         engine.write_log(create)
