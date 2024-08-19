@@ -387,7 +387,7 @@ def re_order(engine, tick):
     )
     select = pmodel.CTPOrder.select().where(where)
     #engine.write_log(select)
-    engine.write_log(f"超时挂单数量 {len(select)}")
+    #engine.write_log(f"超时挂单数量 {len(select)}")
 
     for v in select:
         #engine.write_log(v.pk_id)
