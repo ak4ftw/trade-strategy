@@ -14,12 +14,12 @@ def run(engine: ScriptEngine):
         engine.write_log("没有连接到账户")
         return
 
-    # 如果账户未存储就去存储
+    # 遍历当前登录信息
     for v in all_account:
+        engine.account = v.accountid
         if pmodel.Account.select().where(pmodel.Account.account == v.accountid).first() == None:
             pmodel.Account.create(account=v.accountid, slice_num=tools.kv_get("slice_num"), balance=v.balance, froze=v.frozen, create_date=tools.get_now_date_format())
 
-    engine.account = tools.get_account()
 
     # 要操作的合约代码
     engine.open_code = tools.kv_get("open_code")
