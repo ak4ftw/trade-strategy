@@ -121,8 +121,8 @@ def print_price(engine, tick):
     #engine.write_log(f"tick {tick}")
     engine.write_log(f"品名 {tick.name} 代码 {tick.symbol}")
     engine.write_log(f"最新价格 {tick.last_price} 总手数 {tick.volume} 总金额 {tick.turnover}")
-    engine.write_log(f"卖出价格 bid_price_2 {tick.bid_price_3} bid_volume_1 {tick.bid_volume_3}")
-    engine.write_log(f"卖出价格 bid_price_2 {tick.bid_price_2} bid_volume_1 {tick.bid_volume_2}")
+    engine.write_log(f"卖出价格 bid_price_3 {tick.bid_price_3} bid_volume_3 {tick.bid_volume_3}")
+    engine.write_log(f"卖出价格 bid_price_2 {tick.bid_price_2} bid_volume_2 {tick.bid_volume_2}")
     engine.write_log(f"卖出价格 bid_price_1 {tick.bid_price_1} bid_volume_1 {tick.bid_volume_1}")
     engine.write_log(f"买入价格 ask_price_1 {tick.ask_price_1} ask_volume_1 {tick.ask_volume_1}")
     engine.write_log(f"买入价格 ask_price_2 {tick.ask_price_2} ask_volume_2 {tick.ask_volume_2}")
@@ -392,10 +392,10 @@ def re_order(engine, tick):
         # 关闭数据库限价挂单
         pmodel.CTPOrder.update(is_close=1, note="超时关闭 re_order").where(pmodel.CTPOrder.pk_id == v.pk_id).execute()
 
+        # todo test 新生成的市价平仓 也要检测一下市价是否盈利 不盈利就不开
         # 是否生成新的市价挂单
         if v.open_or_close == "open":
             pass
-        # todo test 新生成的市价平仓 也要检测一下市价是否盈利 不盈利就不开
         if v.open_or_close == "close":
             slice = pmodel.Slice.select(pmodel.Slice.open_price).where(pmodel.Slice.pk_id == v.slice_id).first()
             if v.buy_or_sell == "buy":
