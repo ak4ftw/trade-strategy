@@ -401,10 +401,12 @@ def re_order(engine, tick):
             if v.buy_or_sell == "buy":
                 # 如果是 买平
                 if slice.open_price - 2 > tick.ask_price_1:
+                    engine.write_log(f"市价买平 无法盈利 退出")
                     return
             else:
                 # 如果是 卖平
                 if slice.open_price - 2 < tick.bid_price_1:
+                    engine.write_log(f"市价买平 无法盈利 退出")
                     return
             pass
 
