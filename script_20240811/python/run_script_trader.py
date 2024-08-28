@@ -97,7 +97,8 @@ def loop_handle(engine):
     if now_time_form == tools.kv_get("after_trade_time"):
         save_contract_price(tick.name, tick.symbol, tick.last_price)
         save_account_client_equity(engine, engine.account)
-        engine.strategy_active = False
+        # 改为不会自动停止
+        # engine.strategy_active = False
 
 
 # 交易时段运行前运行
