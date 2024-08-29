@@ -3,7 +3,7 @@ from peewee import CharField, IntegerField, DecimalField, DateTimeField, DateFie
 import uuid
 import time
 
-db = MySQLDatabase(database='vnpy', user='root', password='root', host='localhost', port=3306)
+db = MySQLDatabase(database='vnpy_slave', user='root', password='root', host='localhost', port=3306)
 
 
 class User(Model):
