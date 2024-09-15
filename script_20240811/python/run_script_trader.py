@@ -411,12 +411,12 @@ def re_order(engine, tick):
                 # 如果是 买平
                 if slice.open_price - 2 < tick.ask_price_1:
                     engine.write_log(f"市价买平 无法盈利 不执行重挂 open_price:{slice.open_price} ask_price_1:{tick.ask_price_1}")
-                    return
+                    break
             else:
                 # 如果是 卖平
                 if slice.open_price + 2 > tick.bid_price_1:
                     engine.write_log(f"市价买平 无法盈利 不执行重挂 open_price:{slice.open_price} bid_price_1:{tick.bid_price_1}")
-                    return
+                    break
             pass
 
         # 生成新的市价挂单
@@ -436,7 +436,7 @@ def re_order(engine, tick):
         # 如果开仓失败提示
         if order_id == "":
             engine.write_log("开仓失败 re_order 未返回 order_id")
-            return
+            break
 
         # 存储挂单记录
         create = pmodel.CTPOrder.create(
